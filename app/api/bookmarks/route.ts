@@ -13,17 +13,12 @@ export async function GET(request: NextRequest) {
   try {
     const user = requireAuth(request)
     
-    const bookmarksRaw = await prisma.bookmark.findMany({
+    const bookmarks = await prisma.bookmark.findMany({
       where: { userId: user.userId },
       orderBy: { order: 'asc' }
     })
 
-    // Parse tags from JSON strings
-    const bookmarks = bookmarksRaw.map((bookmark: any) => ({
-      ...bookmark,
-      tags: JSON.parse(bookmark.tags || '[]')
-    }))
-
+    // No need to parse tags - they're already arrays in PostgreSQL
     return NextResponse.json({ bookmarks })
   } catch (error) {
     console.error('Get bookmarks error:', error)
@@ -83,19 +78,14 @@ export async function POST(request: NextRequest) {
         url: url,
         favicon: metadata.favicon,
         summary: summary,
-        tags: JSON.stringify(tags), // Store as JSON string
+        tags: tags, // Store as PostgreSQL array
         order: newOrder,
         userId: user.userId
       }
     })
 
-    // Return bookmark with parsed tags
-    const bookmarkWithTags = {
-      ...bookmark,
-      tags: JSON.parse(bookmark.tags || '[]')
-    }
-
-    return NextResponse.json({ bookmark: bookmarkWithTags }, { status: 201 })
+    // Return bookmark (tags are already arrays)
+    return NextResponse.json({ bookmark }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

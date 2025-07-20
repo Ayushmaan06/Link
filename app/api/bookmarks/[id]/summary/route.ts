@@ -35,14 +35,9 @@ export async function POST(
       data: { summary }
     })
 
-    // Return bookmark with parsed tags
-    const bookmarkWithTags = {
-      ...updatedBookmark,
-      tags: JSON.parse(updatedBookmark.tags || '[]')
-    }
-
+    // Return bookmark (tags are already arrays)
     return NextResponse.json({ 
-      bookmark: bookmarkWithTags,
+      bookmark: updatedBookmark,
       message: 'Summary updated successfully'
     })
   } catch (error) {

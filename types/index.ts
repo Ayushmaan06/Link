@@ -4,7 +4,7 @@ export interface Bookmark {
   url: string
   favicon: string | null
   summary: string | null
-  tags: string[] // Will be parsed from JSON string
+  tags: string[] // PostgreSQL array
   order: number
   createdAt: string
   updatedAt: string

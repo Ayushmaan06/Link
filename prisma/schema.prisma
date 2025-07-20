@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -28,7 +28,7 @@ model Bookmark {
   url         String
   favicon     String?
   summary     String?
-  tags        String   @default("[]") // Store as JSON string for SQLite
+  tags        String[] @default([]) // Use native PostgreSQL array for tags
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

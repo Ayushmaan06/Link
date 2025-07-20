@@ -33,23 +33,13 @@ export async function PUT(
     }
 
     // Update bookmark
-    const updatedData = {
-      ...updateData,
-      tags: updateData.tags ? JSON.stringify(updateData.tags) : undefined
-    }
-
     const updatedBookmark = await prisma.bookmark.update({
       where: { id: params.id },
-      data: updatedData
+      data: updateData
     })
 
-    // Return with parsed tags
-    const bookmarkWithTags = {
-      ...updatedBookmark,
-      tags: JSON.parse(updatedBookmark.tags || '[]')
-    }
-
-    return NextResponse.json({ bookmark: bookmarkWithTags })
+    // Return bookmark (tags are already arrays)
+    return NextResponse.json({ bookmark: updatedBookmark })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
