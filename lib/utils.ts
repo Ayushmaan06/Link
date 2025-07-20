@@ -1,4 +1,5 @@
 import { load } from 'cheerio'
+import Groq from 'groq-sdk'
 
 export interface URLMetadata {
   title: string
@@ -132,9 +133,9 @@ const checkRateLimit = (): boolean => {
 
 export const generateSummary = async (url: string): Promise<string> => {
   try {
-    // Check rate limiting (keeping this for safety even with API key)
+    // Check rate limiting (keeping this for safety)
     if (!checkRateLimit()) {
-      console.warn('Rate limit reached for Jina AI API')
+      console.warn('Rate limit reached for content fetching')
       return 'Summary temporarily unavailable due to rate limiting.'
     }
     
@@ -142,86 +143,115 @@ export const generateSummary = async (url: string): Promise<string> => {
     rateLimitTracker.lastRequestTime = Date.now()
     rateLimitTracker.requestCount++
     
-    const apiKey = process.env.JINA_API_KEY
+    // Step 1: Fetch content using Jina AI
+    const jinaApiKey = process.env.JINA_API_KEY
+    const groqApiKey = process.env.GROQ_API_KEY
     
-    if (!apiKey) {
-      console.warn('JINA_API_KEY not configured, falling back to public endpoint')
-      // Fallback to public endpoint if no API key
-      const response = await fetchWithTimeout(`https://r.jina.ai/${url}`, 15000)
-      
-      if (!response.ok) {
-        throw new Error(`Jina AI public API error: ${response.status}`)
-      }
-      
-      let summary = await response.text()
-      summary = summary.trim()
-      
-      if (summary.length > 800) {
-        const breakPoint = summary.lastIndexOf('.', 800) || summary.lastIndexOf(' ', 800)
-        summary = summary.substring(0, breakPoint > 0 ? breakPoint + 1 : 800).trim() + '...'
-      }
-      
-      return summary || 'No summary available'
+    if (!groqApiKey) {
+      console.error('GROQ_API_KEY not configured')
+      return 'Summary service not configured.'
     }
     
-    // Use authenticated Jina AI Reader API with the correct endpoint format
-    const jinaResponse = await fetch(`https://r.jina.ai/${url}`, {
+    console.log('Fetching content from:', url)
+    
+    // Use Jina AI to fetch content - ensure proper URL handling
+    let jinaUrl = `https://r.jina.ai/${url}`
+    
+    // Handle URLs that might need special formatting
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      jinaUrl = `https://r.jina.ai/https://${url}`
+    }
+    
+    const jinaResponse = await fetch(jinaUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        ...(jinaApiKey && { 'Authorization': `Bearer ${jinaApiKey}` }),
         'Accept': 'text/plain',
         'User-Agent': 'LinkSaver/1.0'
       }
     })
     
     if (!jinaResponse.ok) {
-      // Handle specific status codes
-      if (jinaResponse.status === 429) {
-        console.warn('Jina AI API rate limit exceeded')
-        return 'Summary temporarily unavailable due to rate limiting.'
-      } else if (jinaResponse.status === 401) {
-        console.warn('Jina AI API authentication failed')
-        return 'Summary temporarily unavailable due to authentication error.'
-      } else if (jinaResponse.status >= 500) {
-        console.warn('Jina AI API server error')
-        return 'Summary temporarily unavailable.'
-      }
-      throw new Error(`Jina AI API error: ${jinaResponse.status}`)
+      const errorText = await jinaResponse.text()
+      console.error(`Jina AI API error: ${jinaResponse.status} - ${errorText}`)
+      console.error('Request URL was:', jinaUrl)
+      return 'Summary temporarily unavailable.'
     }
     
-    // The API returns plain text with metadata
-    let summary = await jinaResponse.text()
+    let rawContent = await jinaResponse.text()
+    console.log('Raw content length:', rawContent.length)
     
-    // Clean up the summary - remove metadata headers
-    const contentStart = summary.indexOf('Markdown Content:')
+    // Clean up the content - remove metadata headers
+    const contentStart = rawContent.indexOf('Markdown Content:')
     if (contentStart !== -1) {
-      summary = summary.substring(contentStart + 'Markdown Content:'.length).trim()
+      rawContent = rawContent.substring(contentStart + 'Markdown Content:'.length).trim()
     }
     
-    // Remove common markdown formatting for better readability
-    summary = summary
+    // Remove markdown formatting and clean up
+    rawContent = rawContent
       .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
       .replace(/\*(.*?)\*/g, '$1')     // Remove italic markdown
       .replace(/#{1,6}\s/g, '')        // Remove markdown headers
       .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Convert links to text
+      .replace(/\n\s*\n/g, '\n')       // Remove multiple newlines
       .trim()
     
-    // If summary is too short or generic, return fallback
-    if (summary.length < 100 || summary.toLowerCase().includes('error') || summary.toLowerCase().includes('not found')) {
-      return 'Summary not available for this URL.'
+    // If content is too short, return fallback
+    if (rawContent.length < 200) {
+      return 'Content too short to summarize.'
     }
     
-    // Trim the summary if it's too long (keeping it reasonable for UI)
-    if (summary.length > 800) {
-      // Find a good breaking point near 800 characters
-      const breakPoint = summary.lastIndexOf('.', 800) || summary.lastIndexOf(' ', 800)
-      summary = summary.substring(0, breakPoint > 0 ? breakPoint + 1 : 800).trim() + '...'
+    // Truncate content for Groq (keep it reasonable for API limits)
+    if (rawContent.length > 4000) {
+      rawContent = rawContent.substring(0, 4000) + '...'
     }
     
-    return summary || 'No summary available'
+    console.log('Cleaned content length:', rawContent.length)
+    
+    // Step 2: Use Groq to create a concise summary
+    const groq = new Groq({
+      apiKey: groqApiKey
+    })
+    
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant that creates concise, informative summaries. Create a 1-2 sentence summary that captures the main essence and key points of the content. Be clear, direct, and informative.'
+        },
+        {
+          role: 'user',
+          content: `Please summarize this content in 1-2 clear, informative sentences:\n\n${rawContent}`
+        }
+      ],
+      model: 'gemma2-9b-it',
+      temperature: 0.3,
+      max_tokens: 150,
+      top_p: 0.9,
+    })
+    
+    const summary = completion.choices[0]?.message?.content?.trim()
+    
+    if (!summary || summary.length < 20) {
+      return 'Unable to generate summary for this content.'
+    }
+    
+    console.log('Generated summary:', summary)
+    return summary
+    
   } catch (error) {
     console.error('Error generating summary:', error)
-    // Fallback message as suggested in the instructions
+    
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.message.includes('rate limit') || error.message.includes('429')) {
+        return 'Summary temporarily unavailable due to rate limiting.'
+      }
+      if (error.message.includes('authentication') || error.message.includes('401')) {
+        return 'Summary service authentication error.'
+      }
+    }
+    
     return 'Summary temporarily unavailable.'
   }
 }

@@ -157,25 +157,33 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
         {bookmark.summary && (
           <div className="mb-4">
             <div className="flex items-start justify-between">
-              <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed flex-1">
-                {bookmark.summary}
-              </p>
-              {(bookmark.summary.includes('temporarily unavailable') || bookmark.summary.includes('not available')) && (
+              <div className="flex-1">
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {bookmark.summary}
+                </p>
+                {(bookmark.summary.includes('temporarily unavailable') || 
+                  bookmark.summary.includes('not available') ||
+                  bookmark.summary.includes('not configured') ||
+                  bookmark.summary.includes('authentication error')) && (
+                  <span className="text-xs text-amber-600 italic mt-1 block">
+                    AI summary service issue - try refreshing
+                  </span>
+                )}
+              </div>
+              {(bookmark.summary.includes('temporarily unavailable') || 
+                bookmark.summary.includes('not available') ||
+                bookmark.summary.includes('not configured') ||
+                bookmark.summary.includes('authentication error')) && (
                 <button
                   onClick={handleRefreshSummary}
                   disabled={isRefreshingSummary}
-                  className="ml-2 text-gray-400 hover:text-primary-600 transition-colors disabled:opacity-50"
+                  className="ml-2 text-gray-400 hover:text-primary-600 transition-colors disabled:opacity-50 flex-shrink-0"
                   title="Refresh summary"
                 >
                   <ArrowPathIcon className={`w-4 h-4 ${isRefreshingSummary ? 'animate-spin' : ''}`} />
                 </button>
               )}
             </div>
-            {bookmark.summary === 'Summary temporarily unavailable.' && (
-              <span className="text-xs text-amber-600 italic mt-1 block">
-                AI summary service is currently unavailable
-              </span>
-            )}
           </div>
         )}
 
