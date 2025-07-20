@@ -3,6 +3,10 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/middleware'
 
+// Add runtime config for Vercel
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const reorderSchema = z.object({
   bookmarkIds: z.array(z.string())
 })

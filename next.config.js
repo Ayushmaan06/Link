@@ -1,12 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    esmExternals: 'loose'
+    esmExternals: 'loose',
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma']
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals.push({
-        'undici': 'commonjs undici'
+        'undici': 'commonjs undici',
+        '@prisma/client': '@prisma/client',
+        'prisma': 'prisma'
       })
     }
     return config

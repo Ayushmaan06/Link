@@ -16,6 +16,12 @@ export const prisma =
     },
   })
 
+// Ensure proper cleanup in serverless environments
 if (process.env.NODE_ENV !== 'production') {
   globalThis.__prisma = prisma
+} else {
+  // In production, ensure connections are managed properly
+  process.on('beforeExit', async () => {
+    await prisma.$disconnect()
+  })
 }

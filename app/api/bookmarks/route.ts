@@ -4,6 +4,10 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/middleware'
 import { fetchURLMetadata, generateSummary, isValidURL } from '@/lib/utils'
 
+// Add runtime config for Vercel
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const createBookmarkSchema = z.object({
   url: z.string().url('Invalid URL'),
   tags: z.array(z.string()).optional().default([])

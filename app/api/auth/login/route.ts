@@ -1,17 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
-import { comparePassword, generateToken } from '@/lib/auth'
+
+// Add runtime config for Vercel
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required')
 })
 
+// Lazy load dependencies to avoid build issues
+async function getAuthDependencies() {
+  try {
+    const { prisma } = await import('@/lib/prisma')
+    const { comparePassword, generateToken } = await import('@/lib/auth')
+    return { prisma, comparePassword, generateToken }
+  } catch (error) {
+    console.error('Failed to load auth dependencies:', error)
+    throw new Error('Authentication service unavailable')
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { email, password } = loginSchema.parse(body)
+
+    // Load dependencies dynamically
+    const { prisma, comparePassword, generateToken } = await getAuthDependencies()
 
     // Find user
     const user = await prisma.user.findUnique({

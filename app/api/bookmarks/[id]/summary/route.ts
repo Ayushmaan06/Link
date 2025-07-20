@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/middleware'
 import { generateSummary } from '@/lib/utils'
 
+// Add runtime config for Vercel
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }

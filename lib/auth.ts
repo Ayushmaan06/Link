@@ -1,7 +1,14 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+// Validate JWT_SECRET at runtime
+const getJWTSecret = () => {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is required')
+  }
+  return secret
+}
 
 export interface JWTPayload {
   userId: string
@@ -17,12 +24,14 @@ export const comparePassword = async (password: string, hashedPassword: string):
 }
 
 export const generateToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
+  const secret = getJWTSecret()
+  return jwt.sign(payload, secret, { expiresIn: '7d' })
 }
 
 export const verifyToken = (token: string): JWTPayload | null => {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload
+    const secret = getJWTSecret()
+    return jwt.verify(token, secret) as JWTPayload
   } catch (error) {
     return null
   }

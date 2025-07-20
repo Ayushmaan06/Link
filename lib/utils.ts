@@ -1,5 +1,10 @@
 import { load } from 'cheerio'
-import Groq from 'groq-sdk'
+
+// Lazy load Groq to avoid build issues
+const getGroq = async () => {
+  const { default: Groq } = await import('groq-sdk')
+  return Groq
+}
 
 export interface URLMetadata {
   title: string
@@ -209,6 +214,7 @@ export const generateSummary = async (url: string): Promise<string> => {
     console.log('Cleaned content length:', rawContent.length)
     
     // Step 2: Use Groq to create a concise summary
+    const Groq = await getGroq()
     const groq = new Groq({
       apiKey: groqApiKey
     })
