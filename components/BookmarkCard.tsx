@@ -90,10 +90,10 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
       {/* Drag handle */}
       <div 
         {...listeners}
-        className="cursor-grab active:cursor-grabbing p-2 bg-gray-50 border-b"
+        className="cursor-grab active:cursor-grabbing p-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 transition-colors duration-200"
       >
         <div className="flex items-center justify-center">
-          <div className="w-6 h-1 bg-gray-300 rounded-full"></div>
+          <div className="w-6 h-1 bg-gray-300 dark:bg-gray-500 rounded-full"></div>
         </div>
       </div>
 
@@ -111,13 +111,13 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
                 }}
               />
             ) : (
-              <ArrowTopRightOnSquareIcon className="w-6 h-6 text-gray-400" />
+              <ArrowTopRightOnSquareIcon className="w-6 h-6 text-gray-400 dark:text-gray-500" />
             )}
             <a 
               href={bookmark.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-primary-600 truncate max-w-xs"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 truncate max-w-xs transition-colors duration-200"
             >
               {new URL(bookmark.url).hostname}
             </a>
@@ -125,7 +125,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
           
           <button
             onClick={() => onDelete(bookmark.id)}
-            className="text-gray-400 hover:text-red-600 transition-colors"
+            className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
           >
             <TrashIcon className="w-5 h-5" />
           </button>
@@ -137,7 +137,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
             <input
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
-              className="w-full text-lg font-semibold text-gray-900 border-b border-gray-300 focus:border-primary-500 focus:outline-none"
+              className="w-full text-lg font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSave()
                 if (e.key === 'Escape') handleCancel()
@@ -145,7 +145,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
             />
           ) : (
             <h3 
-              className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-primary-600"
+              className="text-lg font-semibold text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
               onClick={() => setIsEditing(true)}
             >
               {bookmark.title}
@@ -158,7 +158,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
           <div className="mb-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-gray-600 text-sm leading-relaxed">
+                                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                   {bookmark.summary}
                 </p>
                 {(bookmark.summary.includes('temporarily unavailable') || 
@@ -177,7 +177,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
                 <button
                   onClick={handleRefreshSummary}
                   disabled={isRefreshingSummary}
-                  className="ml-2 text-gray-400 hover:text-primary-600 transition-colors disabled:opacity-50 flex-shrink-0"
+                  className="ml-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors disabled:opacity-50 flex-shrink-0"
                   title="Refresh summary"
                 >
                   <ArrowPathIcon className={`w-4 h-4 ${isRefreshingSummary ? 'animate-spin' : ''}`} />
@@ -195,7 +195,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
                 value={editTags}
                 onChange={(e) => setEditTags(e.target.value)}
                 placeholder="Enter tags separated by commas"
-                className="text-sm text-gray-600 border-b border-gray-300 focus:border-primary-500 focus:outline-none"
+                className="text-sm text-gray-600 dark:text-gray-300 bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSave()
                   if (e.key === 'Escape') handleCancel()
@@ -203,20 +203,20 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
               />
             ) : (
               <>
-                <TagIcon className="w-4 h-4 text-gray-400" />
+                <TagIcon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <div className="flex flex-wrap gap-1">
                   {bookmark.tags.length > 0 ? (
                     bookmark.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                                                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full"
                       >
                         {tag}
                       </span>
                     ))
                   ) : (
                     <span 
-                      className="text-gray-400 text-xs cursor-pointer hover:text-primary-600"
+                      className="text-gray-400 dark:text-gray-500 text-xs cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
                       onClick={() => setIsEditing(true)}
                     >
                       Add tags
@@ -237,7 +237,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
               </button>
               <button
                 onClick={handleCancel}
-                className="text-xs bg-gray-300 text-gray-700 px-2 py-1 rounded hover:bg-gray-400"
+                className="text-xs bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-200"
               >
                 Cancel
               </button>
@@ -246,7 +246,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUp
         </div>
 
         {/* Timestamp */}
-        <div className="mt-4 text-xs text-gray-400">
+        <div className="mt-4 text-xs text-gray-400 dark:text-gray-500">
           Added {new Date(bookmark.createdAt).toLocaleDateString()}
         </div>
       </div>

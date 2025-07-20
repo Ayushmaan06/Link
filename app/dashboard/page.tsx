@@ -21,6 +21,7 @@ import {
 import AddBookmarkForm from '@/components/AddBookmarkForm'
 import BookmarkCard from '@/components/BookmarkCard'
 import TagFilter from '@/components/TagFilter'
+import ThemeToggle from '@/components/ThemeToggle'
 import { Bookmark } from '@/types'
 
 export default function DashboardPage() {
@@ -226,30 +227,33 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Link Saver Dashboard
             </h1>
-            <button
-              onClick={logout}
-              className="btn-secondary"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <button
+                onClick={logout}
+                className="btn-secondary"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -270,7 +274,7 @@ export default function DashboardPage() {
         <div className="space-y-6">
           {filteredBookmarks.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">
+              <p className="text-gray-500 dark:text-gray-400 text-lg">
                 {bookmarks.length === 0 
                   ? "No bookmarks yet. Add your first one above!" 
                   : "No bookmarks match your current filters."

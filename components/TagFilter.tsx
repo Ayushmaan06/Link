@@ -33,21 +33,21 @@ export default function TagFilter({
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md mb-6 border border-gray-200 dark:border-gray-700 transition-colors duration-200">
       {/* Search */}
       <div className="relative mb-4">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
         <input
           type="text"
           placeholder="Search bookmarks..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+          className="input-field pl-10 pr-4"
         />
         {searchQuery && (
           <button
             onClick={() => onSearchChange('')}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>
@@ -57,11 +57,11 @@ export default function TagFilter({
       {/* Tag Filter */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-gray-700">Filter by Tags</h3>
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by Tags</h3>
           {selectedTags.length > 0 && (
             <button
               onClick={clearAllTags}
-              className="text-xs text-primary-600 hover:text-primary-700"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
             >
               Clear all
             </button>
@@ -75,10 +75,10 @@ export default function TagFilter({
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                  className={`px-3 py-1 text-sm rounded-full border transition-colors duration-200 ${
                     selectedTags.indexOf(tag) !== -1
-                      ? 'bg-primary-100 border-primary-300 text-primary-700'
-                      : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300'
+                      : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   {tag}
@@ -89,14 +89,14 @@ export default function TagFilter({
             {allTags.length > 10 && (
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-xs text-gray-500 hover:text-gray-700"
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
               >
                 {isOpen ? 'Show less' : `Show ${allTags.length - 10} more tags`}
               </button>
             )}
           </>
         ) : (
-          <p className="text-sm text-gray-500">No tags available</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No tags available</p>
         )}
       </div>
 

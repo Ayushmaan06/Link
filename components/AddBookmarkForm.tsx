@@ -28,10 +28,10 @@ export default function AddBookmarkForm({ onAdd }: AddBookmarkFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 border border-gray-200 dark:border-gray-700 transition-colors duration-200">
       <div className="flex flex-col space-y-4">
         <div>
-          <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             URL
           </label>
           <input
@@ -46,7 +46,7 @@ export default function AddBookmarkForm({ onAdd }: AddBookmarkFormProps) {
         </div>
         
         <div>
-          <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Tags (comma separated)
           </label>
           <input
