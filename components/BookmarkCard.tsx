@@ -4,22 +4,24 @@ import { useState } from 'react'
 import { 
   TrashIcon, 
   TagIcon,
-  ArrowTopRightOnSquareIcon 
+  ArrowTopRightOnSquareIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { Bookmark } from '@/types'
 
 interface BookmarkCardProps {
   bookmark: Bookmark
   onDelete: (id: string) => void
   onUpdate: (id: string, data: { title?: string; tags?: string[] }) => void
+  onSummaryUpdate?: (id: string, summary: string) => void
 }
 
-export default function BookmarkCard({ bookmark, onDelete, onUpdate }: BookmarkCardProps) {
+export default function BookmarkCard({ bookmark, onDelete, onUpdate, onSummaryUpdate }: BookmarkCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(bookmark.title)
   const [editTags, setEditTags] = useState(bookmark.tags.join(', '))
+  const [isRefreshingSummary, setIsRefreshingSummary] = useState(false)
   
   const {
     attributes,
@@ -31,7 +33,7 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate }: BookmarkC
   } = useSortable({ id: bookmark.id })
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     transition,
     opacity: isDragging ? 0.5 : 1,
   }
@@ -49,6 +51,33 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate }: BookmarkC
     setEditTitle(bookmark.title)
     setEditTags(bookmark.tags.join(', '))
     setIsEditing(false)
+  }
+
+  const handleRefreshSummary = async () => {
+    if (isRefreshingSummary) return
+    
+    setIsRefreshingSummary(true)
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}/summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (onSummaryUpdate) {
+          onSummaryUpdate(bookmark.id, data.bookmark.summary)
+        }
+      } else {
+        console.error('Failed to refresh summary')
+      }
+    } catch (error) {
+      console.error('Error refreshing summary:', error)
+    } finally {
+      setIsRefreshingSummary(false)
+    }
   }
 
   return (
@@ -126,9 +155,28 @@ export default function BookmarkCard({ bookmark, onDelete, onUpdate }: BookmarkC
 
         {/* Summary */}
         {bookmark.summary && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-            {bookmark.summary}
-          </p>
+          <div className="mb-4">
+            <div className="flex items-start justify-between">
+              <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed flex-1">
+                {bookmark.summary}
+              </p>
+              {(bookmark.summary.includes('temporarily unavailable') || bookmark.summary.includes('not available')) && (
+                <button
+                  onClick={handleRefreshSummary}
+                  disabled={isRefreshingSummary}
+                  className="ml-2 text-gray-400 hover:text-primary-600 transition-colors disabled:opacity-50"
+                  title="Refresh summary"
+                >
+                  <ArrowPathIcon className={`w-4 h-4 ${isRefreshingSummary ? 'animate-spin' : ''}`} />
+                </button>
+              )}
+            </div>
+            {bookmark.summary === 'Summary temporarily unavailable.' && (
+              <span className="text-xs text-amber-600 italic mt-1 block">
+                AI summary service is currently unavailable
+              </span>
+            )}
+          </div>
         )}
 
         {/* Tags */}

@@ -167,6 +167,12 @@ export default function DashboardPage() {
     }
   }
 
+  const updateBookmarkSummary = (id: string, summary: string) => {
+    setBookmarks((prev: Bookmark[]) => prev.map((bookmark: Bookmark) => 
+      bookmark.id === id ? { ...bookmark, summary } : bookmark
+    ))
+  }
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
@@ -288,6 +294,7 @@ export default function DashboardPage() {
                       bookmark={bookmark}
                       onDelete={deleteBookmark}
                       onUpdate={updateBookmark}
+                      onSummaryUpdate={updateBookmarkSummary}
                     />
                   ))}
                 </div>
